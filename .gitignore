@@ -113,6 +113,6 @@ results/
 images/
 models/
 *.mp4
-*.jgp
+*.jpg
 *.png
 

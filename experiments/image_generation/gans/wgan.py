@@ -337,8 +337,7 @@ def noise(size):
 d_optimizer = optim.RMSprop(discriminator.parameters(), lr=0.0002)
 g_optimizer = optim.RMSprop(generator.parameters(), lr=0.0002)
 
-loss = nn.BCELoss()
-D_loss = -(torch.mean(D_real) - torch.mean(D_fake))
+# loss = nn.BCELoss()
 
 
 def ones_target(size):
@@ -365,15 +364,18 @@ def train_discriminator(optimizer, real_data, fake_data):
 	# 1.1 Train on Real Data
 	prediction_real = discriminator(real_data)
 	# Calculate error and backpropagate
-	error_real = loss(prediction_real, ones_target(N))
-	error_real.backward()
+	# error_real = loss(prediction_real, ones_target(N))
+	# error_real.backward()
 
 	# 1.2 Train on Fake Data
 	# fake_data = fake_data.view(-1, 3, 64, 64)
 	prediction_fake = discriminator(fake_data)
 	# Calculate error and backpropagate
-	error_fake = loss(prediction_fake, zeros_target(N))
-	error_fake.backward()
+	# error_fake = loss(prediction_fake, zeros_target(N))
+	# error_fake.backward()
+
+	D_loss = -(torch.mean(prediction_real) - torch.mean(prediction_fake))
+	D_loss.backward()
 
 	# 1.3 Update weights with gradients
 	optimizer.step()
@@ -388,7 +390,8 @@ def train_discriminator(optimizer, real_data, fake_data):
 		p.data.clamp_(-clip, clip)
 
 	# Return error and predictions for real and fake inputs
-	return error_real + error_fake, prediction_real, prediction_fake
+	# return error_real + error_fake, prediction_real, prediction_fake
+	return D_loss, prediction_real, prediction_fake
 
 
 def train_generator(optimizer, fake_data):
@@ -401,14 +404,16 @@ def train_generator(optimizer, fake_data):
 	prediction = discriminator(fake_data)
 
 	# Calculate error and backpropagate
-	error = loss(prediction, ones_target(N))
-	error.backward()
+	# error = loss(prediction, ones_target(N))
+	G_loss = -torch.mean(prediction)
+
+	G_loss.backward()
 
 	# Update weights with gradients
 	optimizer.step()
 
 	# Return error
-	return error
+	return G_loss
 
 
 num_test_samples = 16
